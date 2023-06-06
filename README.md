@@ -1,6 +1,10 @@
 # SampleFastApiAppTools
 
 
+### Requirements
+#### - AWS cli with credentials 
+#### - Terraform 
+#### - Ansible  
 
 
 ### Create S3 State Bucket
@@ -17,15 +21,15 @@ aws s3api create-bucket --bucket "BUCKET_NAME"  --region us-east-1
     region         = "us-east-1"
 ```
 
-### Initialize backend 
+### Initialize remote state
 ```shell
 terraform init 
 ```
 
 ### input your aws credentials and choose instance name into terraform.tfvars from terraform.tfvars.example
 ```terraform
-access_key = "XXXXX"
-secret_key = "XXXX"
+access_key = "AWS_KEY"
+secret_key = "SECRET_KEY"
 instance_name = "INSTANCE_NAME"
 ```
 ### Execute plan and verify everything looks good
@@ -33,13 +37,10 @@ instance_name = "INSTANCE_NAME"
 terraform plan  
 ```
 
-
-
 ### Deploy cloud resources
 ```shell
 terraform apply  
 ```
-
 
 ### Grab instance name and private key from the output
 ```shell
@@ -49,16 +50,21 @@ instance_dns_name = "ec2-XX-XX-XX-XX.compute-1.amazonaws.com"
 
 ```
 
+A private key with the instance name will be generated. Save this in a secure location
 ### input ansible host and private key into inventory.ini file from inventory.ini.example
 ```shell
 [webservers]
 web1 ansible_host=ec2-XX-XX-XX-XX.compute-1.amazonaws.com ansible_user=ubuntu
-
-[all:vars]
+#location of your generated private key 
+[all:vars] 
 ansible_ssh_private_key_file=./INSTANCE_NAME.pem
 
 ```
 
+### Update private key permissions 
+```shell
+chmod 400 ./INSTANCE_NAME.pem
+```
 
 ### Execute ansible setup playbook
 ```shell
@@ -69,13 +75,12 @@ ansible-playbook -vv -i inventory.ini instance-setup.yaml
 
 ### Verify instance is deployed on exposed port 8000
 ```
-http://ec2-XX-XX-XX-XX.compute-1.amazonaws.com:8000
+curl http://ec2-XX-XX-XX-XX.compute-1.amazonaws.com:8000
 
 ```
 
 ### If there are any issues, you may ssh to the instance
 ```shell
-  chmod 400 fibonacci-demo.pem
   ssh -i "INSTANCE_NAME.pem" ubuntu@ec2-XX-XX-XX-XX.compute-1.amazonaws.com
 
 ```

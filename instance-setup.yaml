@@ -3,7 +3,7 @@
   gather_facts: false
   become: true
   vars:
-    application_dir: /home/ubuntu/sample-fast-api-app
+    application_dir: "/home/ubuntu/sample-fast-api-app"
   tasks:
     - name: Install required packages
       apt:
@@ -48,12 +48,12 @@
     - name: Clone repository
       git:
         repo: https://github.com/ariramirez91/SampleFastApiApp.git
-        dest: {{ application_dir }}
+        dest: "{{ application_dir }}"
         version: fibonacci-app
     - name: Build Docker images
-      command: docker-compose -f {{ application_dir }}/docker-compose.yaml build
+      command: docker-compose -f "{{ application_dir }}/docker-compose.yaml" build
       args:
-        chdir: {{ application_dir }}
+        chdir: "{{ application_dir }}"
     - name: Create systemd unit file
       template:
         src: ./systemd_template.j2
