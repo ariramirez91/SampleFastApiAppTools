@@ -1,0 +1,11 @@
+[Unit]
+Description=Fibonacci app
+After=network.target
+
+[Service]
+ExecStart=docker-compose up
+User=root
+WorkingDirectory={{ application_dir }}
+
+[Install]
+WantedBy=multi-user.target

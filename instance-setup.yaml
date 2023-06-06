@@ -1,0 +1,64 @@
+- name: Playbook to setup app on docker compose service
+  hosts: all
+  gather_facts: false
+  become: true
+  vars:
+    application_dir: "/home/ubuntu/sample-fast-api-app"
+  tasks:
+    - name: Install required packages
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+        state: present
+
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Get lsb codename
+      shell: lsb_release -cs
+      register: lsb_codename
+
+    - name: Add Docker repository
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ lsb_codename.stdout }} stable
+        state: present
+
+    - name: Install Docker
+      apt:
+        name: docker-ce
+        state: present
+
+    - name: Install Docker Compose
+      shell: |
+        curl -sSL "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+      args:
+        creates: /usr/local/bin/docker-compose
+        executable: /bin/bash
+
+    - name: Set execute permissions for Docker Compose
+      file:
+        path: /usr/local/bin/docker-compose
+        mode: 'u+x,g+x'
+    - name: Clone repository
+      git:
+        repo: https://github.com/ariramirez91/SampleFastApiApp.git
+        dest: "{{ application_dir }}"
+        version: fibonacci-app
+    - name: Build Docker images
+      command: docker-compose -f "{{ application_dir }}/docker-compose.yaml" build
+      args:
+        chdir: "{{ application_dir }}"
+    - name: Create systemd unit file
+      template:
+        src: ./systemd_template.j2
+        dest: /etc/systemd/system/fibonacci.service
+    - name: Start the unit
+      systemd:
+        name: fibonacci
+        state: started

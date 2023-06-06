@@ -1,5 +1,16 @@
+.idea/*
+
+# files with texcution details. Tio be created from templates
+inventory.ini
+terraform.tfvars
+backend.tf
+
+# any instance created .pem
+*.pem
+
 # Local .terraform directories
-**/.terraform/*
+.terraform/*
+.terraform.*
 
 # .tfstate files
 *.tfstate
